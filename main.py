@@ -17,7 +17,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("CE BetterTrader API iniciando...")
-    print(f"RPC URL: {settings.helius_rpc_url}")
+    print(f"RPC configurado: {'sí' if settings.helius_api_key else 'no (RPC público)'}")
     print(f"API running on http://{settings.API_HOST}:{settings.API_PORT}")
     yield
     print("CE BetterTrader API deteniéndose...")
