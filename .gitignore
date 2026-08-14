@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+.claude/settings.local.json
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+*.db
+*.sqlite
+data/
+cache/
+
+# Logs and local tooling
+*.log
+server.log
+analyze_tmp.json
+.freebuff/
+.pytest_cache/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/
+data/feedback.json

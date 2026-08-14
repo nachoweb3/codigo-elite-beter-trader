@@ -1,0 +1,13 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+httpx==0.27.2
+pydantic==2.9.2
+pydantic-settings==2.6.0
+python-dotenv==1.0.1
+base58==2.1.1
+aiohttp==3.10.10
+# Trading automático
+solana==0.36.11
+solders==0.27.1
+# WebSocket (monitoreo en tiempo real)
+websockets==14.1

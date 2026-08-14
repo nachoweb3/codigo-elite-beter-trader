@@ -1,0 +1,3 @@
+@echo off
+echo Starting BetterTrader API...
+python main.py

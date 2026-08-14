@@ -1,0 +1,35 @@
+# CE BetterTrader PRO — Render Blueprint
+# 1) Sube el proyecto a GitHub.
+# 2) En Render: New > Blueprint y selecciona ese repositorio.
+# 3) Completa las variables marcadas sync: false en el panel.
+services:
+  - type: web
+    name: ce-bettertrader
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /api/health
+    disk:
+      name: ce-bettertrader-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: ACCESS_CONTROL
+        value: "true"
+      - key: DEMO_MODE
+        value: "false"
+      - key: ALLOW_SERVER_SIDE_TRADING
+        value: "false"
+      - key: HELIUS_API_KEY
+        sync: false
+      - key: ADMIN_WALLETS
+        sync: false
+      - key: MERCHANT_WALLET
+        sync: false
+      - key: ACCESS_PRICE_SOL
+        value: "0.1"
+      - key: ACCESS_DURATION_DAYS
+        value: "30"
+      # Si usas dominio propio, sustituye este valor por el origen exacto.
+      - key: CORS_ORIGINS
+        value: "https://ce-bettertrader.onrender.com"

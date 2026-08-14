@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CE BetterTrader - Inteligencia de Trading en Solana</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=10">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <!-- App Container -->
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 4L4 12V28L20 36L36 28V12L20 4Z" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                        <path d="M20 16V28M20 16L26 12M20 28L14 24" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00D9FF"/>
+                                <stop offset="100%" stop-color="#7C3AED"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-name">CE BetterTrader</h1>
+                    <span class="brand-pro">PRO</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM15 9a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V9z"/>
+                    </svg>
+                    <span>Panel</span>
+                </button>
+                <button class="nav-item" data-view="portfolio">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/>
+                    </svg>
+                    <span>Portafolio</span>
+                </button>
+                <button class="nav-item" data-view="analytics">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    </svg>
+                    <span>Análisis</span>
+                </button>
+                <button class="nav-item" data-view="signals">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>Señales</span>
+                    <span class="nav-badge">AI</span>
+                </button>
+                <button class="nav-item" data-view="trading">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 3h4v4H3V3zm5 0h4v4H8V3zm5 0h4v4h-4V3zM3 8h4v4H3V8zm5 0h4v4H8V8zm5 0h4v4h-4V8zM3 13h4v4H3v-4zm5 0h4v4H8v-4zm5 0h4v4h-4v-4z"/>
+                    </svg>
+                    <span>Auto-Trading</span>
+                    <span class="nav-badge hot">PRO</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="wallet-info" id="currentWallet">
+                    <div class="wallet-icon"></div>
+                    <div class="wallet-details">
+                        <span class="wallet-label">Wallet Conectada</span>
+                        <span class="wallet-address" id="connectedWallet">--</span>
+                    </div>
+                </div>
+                <button class="admin-btn" id="adminBtn" style="display:none;" onclick="openAdminModal()">🛡️ Panel Admin</button>
+            </div>
+        </aside>
+
+        <!-- Mobile Top Bar (visible only < 900px) -->
+        <div class="mobile-topbar">
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+                </svg>
+            </button>
+            <div class="mobile-brand">
+                <span class="brand-name">CE BetterTrader</span>
+                <span class="brand-pro">PRO</span>
+            </div>
+            <div class="mobile-live">
+                <span class="live-dot"></span>
+                <span class="live-text">EN VIVO</span>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+        <aside class="mobile-drawer" id="mobileDrawer">
+            <div class="mobile-drawer-header">
+                <div class="mobile-brand">
+                    <span class="brand-name">CE BetterTrader</span>
+                    <span class="brand-pro">PRO</span>
+                </div>
+                <button class="mobile-menu-btn" id="mobileDrawerClose" aria-label="Cerrar menú">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6.4 5L12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5z"/>
+                    </svg>
+                </button>
+            </div>
+            <nav class="mobile-drawer-nav" id="mobileDrawerNav"></nav>
+            <div class="mobile-drawer-footer">
+                <div class="wallet-info">
+                    <div class="wallet-icon"></div>
+                    <div class="wallet-details">
+                        <span class="wallet-label">Wallet Conectada</span>
+                        <span class="wallet-address" id="mobileConnectedWallet">--</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Panel de Trading</h1>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-text">EN VIVO</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-container">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                            <path d="M12.4 11.2l3.3 3.3-1.4 1.4-3.3-3.3a6 6 0 11-1.4-1.4l1.4 1.4zM7.5 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9z"/>
+                        </svg>
+                        <input type="text" id="walletInput" placeholder="Pega tu wallet de Solana..." class="search-input">
+                        <button id="analyzeBtn" class="btn-primary">
+                            <span class="btn-text">Analizar</span>
+                            <svg class="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M6 4l4 4-4 4 1.5 1.5L9 9l4 4 1.5-1.5-4-4 4-4L12 8z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="header-actions">
+                        <span class="last-updated" id="lastUpdated"></span>
+                        <span class="rate-limit-warning" id="rateLimitWarning" style="display:none;" title="Estado de la API de Solana">
+                            <span class="rl-dot"></span> API saturada
+                        </span>
+                        <button class="icon-btn" title="Actualizar" onclick="refreshData()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v3.25a1 1 0 11-2 0V13.07a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <p class="loading-text">Analizando transacciones...</p>
+                <p class="loading-sub" id="loadingProgress">Conectando a Solana...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-state">
+                <div class="error-illustration">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                </div>
+                <h3 class="error-title">Error al analizar</h3>
+                <p class="error-message" id="errorMessage"></p>
+                <button class="btn-retry" onclick="analyzeWallet()">Reintentar</button>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="dashboard hidden">
+                <!-- Hero Stats -->
+                <section class="hero-stats">
+                    <div class="hero-card pnl-card">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="hero-icon" style="background: rgba(0, 217, 255, 0.2);">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm10 7H6v-2h8v2z"/>
+                                    </svg>
+                                </span>
+                                P&L Total
+                            </div>
+                            <div class="hero-value" id="totalPnl">0.00 SOL</div>
+                            <div class="hero-change" id="pnlChange">
+                                <span class="hero-change-icon" id="pnlChangeIcon"></span>
+                                <span class="hero-change-text" id="pnlChangeText">--</span>
+                            </div>
+                        </div>
+                        <canvas id="pnlMiniChart" class="hero-chart"></canvas>
+                    </div>
+
+                    <div class="hero-card winrate-card">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="hero-icon" style="background: rgba(124, 58, 237, 0.2);">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4.586L7.707 12.293a1 1 0 001.414 1.414l2-2A1 1 0 0010 11V7z"/>
+                                    </svg>
+                                </span>
+                                Tasa de Éxito
+                            </div>
+                            <div class="hero-value" id="winRate">0%</div>
+                            <div class="hero-progress">
+                                <div class="hero-progress-bar" id="winRateBar"></div>
+                            </div>
+                            <div class="hero-stats">
+                                <span class="hero-stat" id="winningTrades">0 W</span>
+                                <span class="hero-stat" id="losingTrades">0 L</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-card trades-card">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="hero-icon" style="background: rgba(34, 197, 94, 0.2);">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 3h4v4H3V3zm5 0h4v4H8V3zm5 0h4v4h-4V3zM3 8h4v4H3V8zm5 0h4v4H8V8zm5 0h4v4h-4V8zM3 13h4v4H3v-4zm5 0h4v4H8v-4zm5 0h4v4h-4v-4z"/>
+                                    </svg>
+                                </span>
+                                Total de Trades
+                            </div>
+                            <div class="hero-value" id="totalTrades">0</div>
+                            <div class="hero-sub">Últimos 30 días</div>
+                        </div>
+                    </div>
+
+                    <!-- Perfil de wallet: cada wallet es un mundo -->
+                    <div class="hero-card profile-card" id="profileCard" style="display:none;">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="profile-emoji" id="profileEmoji">🧠</span>
+                                Perfil de Wallet
+                            </div>
+                            <div class="profile-title" id="profileTitle">--</div>
+                            <div class="profile-desc" id="profileDesc">Analiza la wallet para descubrir su perfil.</div>
+                            <div class="profile-tags" id="profileTags"></div>
+                        </div>
+                    </div>
+
+                    <!-- Trading Score global -->
+                    <div class="hero-card score-card" id="scoreCard" style="display:none;">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="profile-emoji">🎯</span>
+                                Trading Score
+                            </div>
+                            <div class="score-main">
+                                <div class="score-gauge">
+                                    <svg width="92" height="92" viewBox="0 0 92 92">
+                                        <circle cx="46" cy="46" r="40" fill="none" stroke="var(--bg-hover)" stroke-width="8"/>
+                                        <circle id="scoreArc" cx="46" cy="46" r="40" fill="none" stroke="url(#scoreGrad)" stroke-width="8"
+                                                stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2" transform="rotate(-90 46 46)"/>
+                                        <defs>
+                                            <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#22c55e"/>
+                                                <stop offset="100%" stop-color="#38bdf8"/>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="score-number" id="scoreNumber">--</div>
+                                </div>
+                                <div class="score-right">
+                                    <div class="score-grade" id="scoreGrade">--</div>
+                                    <div class="score-label" id="scoreLabel">--</div>
+                                </div>
+                            </div>
+                            <div class="score-breakdown">
+                                <div class="sb-row"><span class="sb-name">Rentabilidad</span><div class="sb-bar"><div class="sb-fill" id="sbRent" style="width:0%"></div></div></div>
+                                <div class="sb-row"><span class="sb-name">Consistencia</span><div class="sb-bar"><div class="sb-fill" id="sbCons" style="width:0%"></div></div></div>
+                                <div class="sb-row"><span class="sb-name">Riesgo</span><div class="sb-bar"><div class="sb-fill" id="sbRiesgo" style="width:0%"></div></div></div>
+                                <div class="sb-row"><span class="sb-name">Eficiencia</span><div class="sb-bar"><div class="sb-fill" id="sbEfic" style="width:0%"></div></div></div>
+                            </div>
+                            <div class="score-summary" id="scoreSummary"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comparación con la comunidad -->
+                    <div class="hero-card community-card" id="communityCard" style="display:none;">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="profile-emoji">🌐</span>
+                                Frente a la Comunidad
+                            </div>
+                            <div class="community-stats" id="communityStats"></div>
+                            <div class="community-foot" id="communityFoot"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mejor franja horaria: cuándo ganas dinero -->
+                    <div class="hero-card timeofday-card" id="timeOfDayCard" style="display:none;">
+                        <div class="hero-bg"></div>
+                        <div class="hero-content">
+                            <div class="hero-label">
+                                <span class="profile-emoji">🕐</span>
+                                Mejor Franja Horaria
+                            </div>
+                            <div class="tod-main" id="todMain">--</div>
+                            <div class="tod-detail" id="todDetail"></div>
+                            <div class="tod-summary" id="todSummary"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Metrics Row -->
+                <section class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-icon profit-factor">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm0 16V5h14v14H5z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Factor de Beneficio</div>
+                            <div class="metric-value" id="profitFactor">0.00</div>
+                            <div class="metric-target">Objetivo: > 2.0</div>
+                        </div>
+                        <div class="metric-gauge">
+                            <div class="gauge-fill" id="profitFactorGauge"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon hold-time">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Retención Promedio</div>
+                            <div class="metric-value" id="avgHoldTime">--</div>
+                            <div class="metric-sub" id="holdTimeLabel">Tiempo promedio</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon largest-win">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 3v18l7-3 7 3V3H5zm12 12l-5-2.18L7 15V5h10v10z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Mejor Trade</div>
+                            <div class="metric-value metric-positive" id="largestWin">+0 SOL</div>
+                            <div class="metric-sub">Mejor operación</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon fees">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.41 16.09V15h2.67v-1.74c1.58-.28 2.64-1.01 2.64-2.25 0-1.32-1.04-1.87-2.2-2.02l-.6-.07c-1.13-.15-1.65-.54-1.65-1.23 0-.69.54-1.1 1.42-1.22v-1.3c-.67.1-1.17.37-1.33.9h-1.3c.15-1.07.83-1.76 1.88-1.93v1.75c-.67.11-1.17.4-1.32.94h1.31v.01c.13-.61.62-1.04 1.33-1.2l.59-.07c1.14-.14 1.64-.53 1.64-1.22 0-.67-.49-1.1-1.31-1.26l-.6-.08c-1.14-.17-1.66-.56-1.66-1.25 0-.67.49-1.1 1.27-1.22V5.91c-.57.1-1.05.38-1.19.88H7.8c.12-1 .72-1.67 1.71-1.84V7.9c-.59.1-1.05.37-1.19.87z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Comisiones Totales</div>
+                            <div class="metric-value metric-negative" id="totalFees">0 SOL</div>
+                            <div class="metric-sub" id="feesPercent">0% del volumen</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon sharpe">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Ratio de Sharpe</div>
+                            <div class="metric-value" id="sharpeRatio">--</div>
+                            <div class="metric-sub">Ajustado por riesgo</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon avg-trade">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Tamaño Promedio</div>
+                            <div class="metric-value" id="avgTradeSize">0 SOL</div>
+                            <div class="metric-sub">Tamaño promedio</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Money Flow Section - NEW -->
+                <section class="money-flow-section">
+                    <div class="flow-header">
+                        <div class="flow-title-group">
+                            <h3 class="flow-title">
+                                <span class="flow-live-indicator">
+                                    <span class="flow-pulse"></span>
+                                    EN VIVO
+                                </span>
+                                Flujo de Dinero
+                            </h3>
+                            <p class="flow-subtitle">¿A dónde va tu dinero y por qué?</p>
+                        </div>
+                        <button class="flow-refresh-btn" onclick="loadFlowData()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v3.25a1 1 0 11-2 0V13.07a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Flow Summary Cards -->
+                    <div class="flow-summary">
+                        <div class="flow-card flow-out">
+                            <div class="flow-card-header">
+                                <span class="flow-label">SOL Saliendo</span>
+                                <span class="flow-direction-icon">→</span>
+                            </div>
+                            <div class="flow-value" id="flowOutgoing">0 SOL</div>
+                            <div class="flow-desc">Inversiones en tokens</div>
+                            <div class="flow-bar">
+                                <div class="flow-bar-fill outgoing" id="flowOutBar"></div>
+                            </div>
+                        </div>
+
+                        <div class="flow-visualizer">
+                            <div class="flow-center">
+                                <div class="flow-center-icon">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor">
+                                        <path d="M16 4L4 10v12l12 6 12-6V10L16 4z"/>
+                                    </svg>
+                                </div>
+                                <div class="flow-center-label" id="flowNetLabel">--</div>
+                            </div>
+                            <div class="flow-arrows">
+                                <div class="flow-arrow outgoing-arrow" id="flowArrowOut">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/>
+                                    </svg>
+                                </div>
+                                <div class="flow-arrow incoming-arrow" id="flowArrowIn">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flow-card flow-in">
+                            <div class="flow-card-header">
+                                <span class="flow-direction-icon">←</span>
+                                <span class="flow-label">SOL Entrando</span>
+                            </div>
+                            <div class="flow-value" id="flowIncoming">0 SOL</div>
+                            <div class="flow-desc">Ventas de tokens</div>
+                            <div class="flow-bar">
+                                <div class="flow-bar-fill incoming" id="flowInBar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flow Directions Table -->
+                    <div class="flow-directions-panel">
+                        <h4 class="flow-section-title">Direcciones de Flujo por Token</h4>
+                        <div class="flow-directions-list" id="flowDirectionsList">
+                            <div class="flow-empty-state">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <p>Analiza tu wallet para ver flujos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Activity Feed -->
+                    <div class="flow-activity-panel">
+                        <h4 class="flow-section-title">
+                            Actividad Reciente
+                            <span class="flow-count" id="flowActivityCount">0 eventos</span>
+                        </h4>
+                        <div class="flow-activity-list" id="flowActivityList">
+                            <div class="flow-empty-state">
+                                <p>Esperando actividad...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Portfolio Holdings Section - NEW -->
+                <section class="portfolio-section">
+                    <div class="portfolio-header">
+                        <div class="portfolio-title-group">
+                            <h3 class="portfolio-title">Mis Tenencias</h3>
+                            <p class="portfolio-subtitle">Lo que tienes ahora en tu wallet</p>
+                        </div>
+                        <div class="portfolio-summary">
+                            <div class="portfolio-summary-item">
+                                <span class="portfolio-summary-label">Saldo SOL</span>
+                                <span class="portfolio-summary-value" id="portfolioSolBalance">0 SOL</span>
+                            </div>
+                            <div class="portfolio-summary-item">
+                                <span class="portfolio-summary-label">Tokens</span>
+                                <span class="portfolio-summary-value" id="portfolioTokensCount">0</span>
+                            </div>
+                            <div class="portfolio-summary-item">
+                                <span class="portfolio-summary-label">Valor Total</span>
+                                <span class="portfolio-summary-value" id="portfolioTotalValue">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-tokens-grid" id="portfolioTokensGrid">
+                        <div class="portfolio-empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <p>Analiza tu wallet para ver tus tokens</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section class="charts-section">
+                    <div class="chart-container large-chart">
+                        <div class="chart-header">
+                            <div>
+                                <h3 class="chart-title">Evolución de P&L</h3>
+                                <p class="chart-subtitle">Acumulado por trade</p>
+                            </div>
+                            <div class="chart-actions">
+                                <span class="dd-badge" id="maxDrawdownBadge" style="display:none;"></span>
+                                <button class="chart-filter active" data-period="all">Todos</button>
+                                <button class="chart-filter" data-period="30">30D</button>
+                                <button class="chart-filter" data-period="7">7D</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="pnlTimelineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">P&L por Token</h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="pnlByTokenChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Section -->
+                <section class="bottom-section">
+                    <!-- Tokens Table -->
+                    <div class="panel tokens-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Tokens Tradeados</h3>
+                            <div class="panel-tabs">
+                                <button class="panel-tab active" data-sort="pnl">P&L</button>
+                                <button class="panel-tab" data-sort="trades">Trades</button>
+                                <button class="panel-tab" data-sort="roi">ROI</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="tokens-table" id="tokensTable">
+                                <div class="token-table-header">
+                                    <span class="col-token">Token</span>
+                                    <span class="col-pnl">P&L</span>
+                                    <span class="col-roi">ROI</span>
+                                    <span class="col-trades">Trades</span>
+                                    <span class="col-holdings">Tenencias</span>
+                                </div>
+                                <div class="token-table-rows" id="tokensTableBody">
+                                    <div class="empty-state">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        </svg>
+                                        <p>Analiza tu wallet para ver tus tokens</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Insights -->
+                    <div class="panel insights-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">
+                                <span class="ai-badge">AI</span>
+                                Análisis y Recomendaciones
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="insights-list" id="insightsList">
+                                <div class="empty-state">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+                                    </svg>
+                                    <p>Obtén insights personalizados de IA</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Auto-Trading Section -->
+                <section class="trading-section" id="tradingSection" style="display: none;">
+                    <!-- Trading Panel -->
+                    <div class="trading-panel">
+                        <div class="trading-header">
+                            <div class="trading-title-group">
+                                <h2 class="trading-title">
+                                    <span class="trading-icon">⚡</span>
+                                    Auto-Trading PRO
+                                </h2>
+                                <p class="trading-subtitle">Compra y vende tokens automáticamente</p>
+                                <div class="optimal-window" id="optimalWindow" style="display:none;"></div>
+                            </div>
+                            <button id="connectWalletBtn" class="btn-connect-wallet" onclick="connectTradingWallet()">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                                </svg>
+                                <span>Conectar Wallet</span>
+                            </button>
+                        </div>
+
+                        <!-- Quick Trade -->
+                        <div class="quick-trade-card">
+                            <h3 class="trade-card-title">Trade Rápido</h3>
+
+                            <div class="trade-type-toggle">
+                                <button class="trade-type-btn active" data-type="buy" onclick="setTradeType('buy')">
+                                    <span>↗</span> Comprar
+                                </button>
+                                <button class="trade-type-btn" data-type="sell" onclick="setTradeType('sell')">
+                                    <span>↘</span> Vender
+                                </button>
+                            </div>
+
+                            <div class="trade-form">
+                                <div class="trade-input-group">
+                                    <label id="inputTokenLabel">Vender (SOL)</label>
+                                    <select id="inputToken" class="trade-select">
+                                        <option value="So11111111111111111111111111111111111111112">SOL</option>
+                                        <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
+                                        <option value="Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB">USDT</option>
+                                    </select>
+                                    <input type="number" id="tradeAmount" class="trade-input" placeholder="0.00" min="0" step="0.01">
+                                </div>
+
+                                <div class="trade-arrow">↓</div>
+
+                                <div class="trade-input-group">
+                                    <label id="outputTokenLabel">Comprar (Token)</label>
+                                    <select id="outputToken" class="trade-select">
+                                        <option value="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263">BONK</option>
+                                        <option value="7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr">JUP</option>
+                                        <option value="MWZttTAeM1vL5tgT450sQ2YZqkfPpS6S8gDMPc4Gpump">WIF</option>
+                                    </select>
+                                    <div id="expectedOutput" class="trade-output">0.00</div>
+                                </div>
+
+                                <div class="trade-settings">
+                                    <div class="trade-setting">
+                                        <label>Tolerancia de Precio</label>
+                                        <select id="slippageSelect" class="slippage-select">
+                                            <option value="0.5">0.5%</option>
+                                            <option value="1.0" selected>1%</option>
+                                            <option value="3.0">3%</option>
+                                            <option value="5.0">5%</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn-quote" onclick="getQuote()">Obtener Cotización</button>
+                                </div>
+
+                                <div id="quoteResult" class="quote-result" style="display: none;">
+                                    <div class="quote-info">
+                                        <span class="quote-label">Recibirás:</span>
+                                        <span class="quote-value" id="quoteReceive">--</span>
+                                    </div>
+                                    <div class="quote-info">
+                                        <span class="quote-label">Precio:</span>
+                                        <span class="quote-value" id="quotePrice">--</span>
+                                    </div>
+                                    <div class="quote-info">
+                                        <span class="quote-label">Impacto:</span>
+                                        <span class="quote-value" id="quoteImpact">--</span>
+                                    </div>
+                                </div>
+
+                                <button id="executeTradeBtn" class="btn-execute-trade" onclick="showTradeModal()" disabled>
+                                    <span>⚡ Ejecutar Trade</span>
+                                </button>
+
+                                <div class="trade-warning">
+                                    <span>⚠️</span>
+                                    <p>Conecta tu wallet para ejecutar trades. Tus fondos nunca salen de tu dispositivo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Strategies -->
+                        <div class="strategies-card">
+                            <h3 class="trade-card-title">Estrategias Activas</h3>
+
+                            <div class="strategies-list" id="strategiesList">
+                                <div class="empty-strategies">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/>
+                                    </svg>
+                                    <p>No hay estrategias activas</p>
+                                    <button class="btn-create-strategy" onclick="showStrategyModal()">Crear Estrategia</button>
+                                </div>
+                            </div>
+
+                            <!-- Quick Strategy Templates -->
+                            <div class="strategy-templates">
+                                <h4>Estrategias Predefinidas</h4>
+                                <div class="template-grid">
+                                    <div class="strategy-template" onclick="quickCreateStrategy('dca')">
+                                        <div class="template-icon">📊</div>
+                                        <div class="template-info">
+                                            <span class="template-name">DCA Automático</span>
+                                            <span class="template-desc">Compras periódicas</span>
+                                        </div>
+                                    </div>
+                                    <div class="strategy-template" onclick="quickCreateStrategy('signal')">
+                                        <div class="template-icon">🎯</div>
+                                        <div class="template-info">
+                                            <span class="template-name">Señales AI</span>
+                                            <span class="template-desc">Basado en análisis</span>
+                                        </div>
+                                    </div>
+                                    <div class="strategy-template" onclick="quickCreateStrategy('grid')">
+                                        <div class="template-icon">📈</div>
+                                        <div class="template-info">
+                                            <span class="template-name">Grid Trading</span>
+                                            <span class="template-desc">Comprar/venir rangos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trade History -->
+                    <div class="trade-history-panel">
+                        <h3 class="panel-title">Historial de Trades</h3>
+                        <div class="trade-history-list" id="tradeHistoryList">
+                            <div class="empty-state">
+                                <p>No hay trades ejecutados</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Transactions -->
+                <section class="panel transactions-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Transacciones Recientes</h3>
+                        <button class="btn-view-all" onclick="viewAllTransactions()">Ver todas</button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="transactions-timeline" id="transactionsList">
+                            <div class="empty-state">
+                                <p>No hay transacciones recientes</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Trade Confirmation Modal -->
+    <div id="tradeConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Trade</h3>
+                <button class="modal-close" onclick="closeTradeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalTradeDetails" class="modal-trade-details">
+                    <!-- Trade details will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeTradeModal()">Cancelar</button>
+                <button id="modalConfirmBtn" class="btn-confirm" onclick="executeTrade()">
+                    Confirmar Trade
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login / Access Gate -->
+    <div id="accessGate" class="access-gate">
+        <div class="access-gate-card">
+            <div class="access-logo">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 4L4 12V28L20 36L36 28V12L20 4Z" stroke="url(#gateGrad)" stroke-width="2" fill="none"/>
+                        <path d="M20 16V28M20 16L26 12M20 28L14 24" stroke="url(#gateGrad)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="gateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00D9FF"/>
+                                <stop offset="100%" stop-color="#7C3AED"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>CE BetterTrader <span class="brand-pro">PRO</span></h2>
+            </div>
+            <p class="access-tagline">Inteligencia de trading en Solana para tu comunidad privada</p>
+
+            <div class="access-status" id="accessStatus"></div>
+
+            <div class="access-buttons">
+                <button class="btn-primary access-login-btn" id="gateConnectBtn" onclick="gateLogin()">
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    <span>Conectar Wallet e Iniciar Sesión</span>
+                </button>
+            </div>
+            <p class="access-hint" id="gateHint">Firma un mensaje con tu wallet (Phantom o Solflare). Nunca pedimos tu private key.</p>
+        </div>
+    </div>
+
+    <!-- Payment / Access Required Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content pay-modal">
+            <div class="modal-header">
+                <h3>🔒 Acceso a CE BetterTrader PRO</h3>
+            </div>
+            <div class="modal-body">
+                <div class="pay-summary" id="paySummary"></div>
+                <div class="pay-box">
+                    <div class="pay-label">Envía SOL a esta wallet:</div>
+                    <div class="pay-address-row">
+                        <code class="pay-address" id="payAddress">--</code>
+                        <button class="icon-btn" onclick="copyPayAddress()" title="Copiar">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4 1h8a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm0 2v7h7V3H4zm2 11v-1h6V5h1v9a1 1 0 01-1 1H6a1 1 0 01-1-1z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="pay-qr" id="payQr"></div>
+                    <button class="btn-primary" id="payCheckBtn" onclick="checkMyPayment()">
+                        <span>✓ Ya pagué — Verificar</span>
+                    </button>
+                    <p class="pay-status" id="payStatus">En cuanto confirmes el envío, pulsa verificar. El acceso se activa automáticamente al confirmarse en la blockchain.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🛡️ Panel de Administración</h3>
+                <button class="modal-close" onclick="closeAdminModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="admin-add-row">
+                    <input type="text" id="adminWalletInput" class="wallet-input" placeholder="Wallet de Solana...">
+                    <button class="btn-primary" onclick="adminAddWallet()">Añadir</button>
+                </div>
+                <div class="admin-list" id="adminWalletList">
+                    <p class="pay-status">Cargando wallets con acceso...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Connect Modal -->
+    <div id="walletConnectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Conectar Wallet</h3>
+                <button class="modal-close" onclick="this.closest('.modal').style.display='none'">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="wallet-warning">⚠️ MODO DEMO - No uses tu wallet principal</p>
+                <div class="wallet-options">
+                    <button class="wallet-option" onclick="connectPhantom()">
+                        <span class="wallet-option-icon" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">P</span>
+                        <span>Phantom</span>
+                    </button>
+                    <button class="wallet-option" onclick="connectSolflare()">
+                        <span class="wallet-option-icon" style="background: linear-gradient(135deg, #f97316, #ef4444);">S</span>
+                        <span>Solflare</span>
+                    </button>
+                </div>
+                <div class="wallet-divider">Firma local segura</div>
+                <p class="wallet-warning">🔒 La aplicación nunca solicita ni envía tu private key. Los swaps online se firman directamente en Phantom o Solflare.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=10"></script>
+</body>
+</html>
