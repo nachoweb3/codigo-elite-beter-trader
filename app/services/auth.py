@@ -22,6 +22,7 @@ from typing import Dict, List, Optional
 
 from app.config import get_settings
 from app.services.storage import atomic_write_json
+from app.services.supabase import supabase_store
 
 settings = get_settings()
 
@@ -47,6 +48,9 @@ class AuthService:
     def __init__(self):
         self.whitelist = _load_json(WHITELIST_FILE, {"wallets": {}})
         self.payments = _load_json(PAYMENTS_FILE, {"payments": {}})
+        if supabase_store.enabled:
+            self.whitelist = supabase_store.load("auth_whitelist", self.whitelist)
+            self.payments = supabase_store.load("auth_payments", self.payments)
         # Sesiones en memoria: token -> {"wallet", "expires"}
         self.sessions: Dict[str, dict] = {}
         self._challenges: Dict[str, dict] = {}
@@ -124,10 +128,12 @@ class AuthService:
             "by": by_admin,
         }
         atomic_write_json(WHITELIST_FILE, self.whitelist)
+        supabase_store.save("auth_whitelist", self.whitelist)
 
     def revoke_whitelist(self, wallet_address: str):
         self.whitelist.get("wallets", {}).pop(wallet_address, None)
         atomic_write_json(WHITELIST_FILE, self.whitelist)
+        supabase_store.save("auth_whitelist", self.whitelist)
 
     def get_payment(self, wallet_address: str) -> Optional[dict]:
         return self.payments.get("payments", {}).get(wallet_address)
@@ -145,6 +151,7 @@ class AuthService:
             "expires": now + duration,
         }
         atomic_write_json(PAYMENTS_FILE, self.payments)
+        supabase_store.save("auth_payments", self.payments)
 
     def has_access(self, wallet_address: str) -> bool:
         """¿Tiene acceso? Whitelist (indefinido), admin, demo o pago vigente."""

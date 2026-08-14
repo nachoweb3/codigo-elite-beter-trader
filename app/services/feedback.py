@@ -12,6 +12,7 @@ import threading
 from pathlib import Path
 from typing import Dict, Any, Optional
 from app.services.storage import atomic_write_json
+from app.services.supabase import supabase_store
 
 FEEDBACK_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "feedback.json"
 
@@ -23,6 +24,8 @@ class FeedbackStore:
         self.path = path
         self._lock = threading.Lock()
         self._data: Dict[str, Any] = self._load()
+        if supabase_store.enabled:
+            self._data = supabase_store.load("feedback", self._data)
 
     def _load(self) -> Dict[str, Any]:
         if not self.path.exists():
@@ -36,6 +39,7 @@ class FeedbackStore:
     def _save(self):
         self._data["updated_at"] = time.time()
         atomic_write_json(self.path, self._data)
+        supabase_store.save("feedback", self._data)
 
     def vote(self, signal_type: str, useful: bool, wallet: Optional[str] = None) -> Dict[str, Any]:
         """Registra un voto sobre una señal. Retorna el score actualizado."""

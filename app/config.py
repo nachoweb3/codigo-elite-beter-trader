@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # --- Cache ---
     CACHE_TTL: int = 300  # seconds
 
+    # --- Persistencia opcional (Supabase Free) ---
+    # La service role key solo vive en el backend; nunca la expongas al frontend.
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+
     # --- Acceso y monetización ---
     # Control de acceso: True en producción. Cuando está desactivado, la app
     # funciona abierta (útil para desarrollo local).

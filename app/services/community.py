@@ -22,6 +22,7 @@ import threading
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from app.services.storage import atomic_write_json
+from app.services.supabase import supabase_store
 
 COMMUNITY_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "community.json"
 
@@ -38,6 +39,8 @@ class CommunityStore:
         self.path = path
         self._lock = threading.Lock()
         self._data: Dict[str, Any] = self._load()
+        if supabase_store.enabled:
+            self._data = supabase_store.load("community", self._data)
 
     def _load(self) -> Dict[str, Any]:
         if not self.path.exists():
@@ -56,6 +59,7 @@ class CommunityStore:
             if len(ev) > 200:
                 self._data["evolution"][wid] = ev[-200:]
         atomic_write_json(self.path, self._data)
+        supabase_store.save("community", self._data)
 
     def record_analysis(
         self,

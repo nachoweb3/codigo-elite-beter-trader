@@ -119,6 +119,38 @@ bettertrader/
 └── .env.example       # Variables de entorno
 ```
 
+## Despliegue gratuito: Hugging Face + Supabase
+
+El `Dockerfile` también es compatible con Hugging Face Spaces (puerto 7860).
+Para que whitelist, pagos, comunidad y feedback sobrevivan a los reinicios del
+Space gratuito, crea un proyecto en [Supabase](https://supabase.com/dashboard),
+ejecuta `supabase_schema.sql` en **SQL Editor** y configura en los Secrets del
+backend:
+
+```env
+SUPABASE_URL=https://TU_PROYECTO.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=TU_CLAVE_SERVICE_ROLE
+```
+
+La `service_role` key solo debe existir en el backend; nunca la pongas en el
+frontend ni en GitHub. Si las variables no están configuradas, la aplicación
+sigue funcionando con JSON local para desarrollo.
+
+### Publicar el Space gratis
+
+1. Crea un Space Docker vacío en [huggingface.co/new-space](https://huggingface.co/new-space), con CPU Basic Free.
+2. Añade las variables de Helius, acceso, pagos y Supabase en **Settings > Variables and secrets**.
+3. Añade el remoto del Space y publica la rama `main`:
+
+```bash
+git remote add huggingface https://huggingface.co/spaces/TU_USUARIO/ce-bettertrader
+git fetch huggingface
+git push --force-with-lease huggingface main
+```
+
+El Space dormirá tras inactividad en el plan gratuito. La URL pública será la
+que muestre Hugging Face, normalmente `https://TU_USUARIO-ce-bettertrader.hf.space`.
+
 ## Publicar en GitHub y Render
 
 La configuración de producción ya está preparada en `Dockerfile`, `render.yaml` y
