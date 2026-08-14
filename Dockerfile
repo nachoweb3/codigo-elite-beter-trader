@@ -12,9 +12,10 @@ COPY . .
 RUN mkdir -p /app/data
 
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
-EXPOSE 8000
+# Hugging Face Spaces usa 7860; Render inyecta su propio PORT.
+ENV PORT=7860
+EXPOSE 7860
 
 # Un worker es intencional: las sesiones de wallet son en memoria.
-# Render inyecta PORT; localmente se usa 8000.
-CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# Render sobrescribe PORT; localmente se puede usar 8000 explícitamente.
+CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860} --workers 1"]
