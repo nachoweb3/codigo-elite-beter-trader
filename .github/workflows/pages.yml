@@ -1,0 +1,63 @@
+name: Publicar frontend en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar frontend estático
+        env:
+          CE_API_BASE_URL: ${{ vars.CE_API_BASE_URL }}
+        run: |
+          mkdir -p _site/static
+          cp app/static/index.html _site/index.html
+          cp app/static/*.js app/static/*.css _site/static/
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          api_url = os.environ.get("CE_API_BASE_URL", "").strip().rstrip("/")
+          index = Path("_site/index.html")
+          html = index.read_text(encoding="utf-8")
+          html = html.replace('"/static/', '"./static/')
+          html = html.replace("'/static/", "'./static/")
+          index.write_text(html, encoding="utf-8")
+          Path("_site/static/config.js").write_text(
+              "window.CE_BETTERTRADER_CONFIG = { apiBase: "
+              + json.dumps(api_url)
+              + " };\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

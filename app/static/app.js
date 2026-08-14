@@ -1,5 +1,7 @@
 // CE BetterTrader Pro - Inteligencia de Trading en Solana
-const API_BASE = window.location.origin;
+// Puede vivir en el mismo dominio que FastAPI o en GitHub Pages con una API
+// separada. Solo contiene una URL pública, nunca secretos.
+const API_BASE = String(window.CE_BETTERTRADER_CONFIG?.apiBase || window.location.origin).replace(/\/$/, '');
 
 // Global state
 const state = {

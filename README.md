@@ -119,6 +119,23 @@ bettertrader/
 └── .env.example       # Variables de entorno
 ```
 
+## Frontend dApp estático en GitHub Pages
+
+El frontend también puede publicarse gratis en GitHub Pages. El workflow
+`.github/workflows/pages.yml` prepara `app/static` y apunta a una API separada
+mediante la variable pública del repositorio `CE_API_BASE_URL`.
+
+1. Publica la API en Hugging Face Spaces (o en otro backend HTTPS).
+2. En GitHub: **Settings > Pages > Source: GitHub Actions**.
+3. En **Settings > Secrets and variables > Actions > Variables**, crea:
+   `CE_API_BASE_URL=https://TU_USUARIO-ce-bettertrader.hf.space`.
+4. En la API configura `CORS_ORIGINS` con la URL de Pages, por ejemplo:
+   `https://nachoweb3.github.io/codigo-elite-beter-trader`.
+5. Haz push a `main`; el workflow publicará el frontend.
+
+La URL será `https://nachoweb3.github.io/codigo-elite-beter-trader/`. GitHub Pages
+solo sirve la interfaz: las claves y el análisis permanecen en el backend.
+
 ## Despliegue gratuito: Hugging Face + Supabase
 
 El `Dockerfile` también es compatible con Hugging Face Spaces (puerto 7860).
