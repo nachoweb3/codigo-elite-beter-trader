@@ -1,3 +1,13 @@
+---
+title: CE BetterTrader
+emoji: 📈
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+suggested_hardware: cpu-basic
+---
+
 # CE BetterTrader - Analizador de Trading en Solana
 
 App que analiza tus trades de memecoins en Solana y te ayuda a mejorar tus decisiones de trading mediante análisis de P&L, métricas avanzadas y recomendaciones personalizadas por wallet.
