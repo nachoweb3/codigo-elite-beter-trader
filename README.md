@@ -135,10 +135,10 @@ El frontend también puede publicarse gratis en GitHub Pages. El workflow
 `.github/workflows/pages.yml` prepara `app/static` y apunta a una API separada
 mediante la variable pública del repositorio `CE_API_BASE_URL`.
 
-1. Publica la API en Hugging Face Spaces (o en otro backend HTTPS).
+1. Publica la API en Render Free (o en otro backend HTTPS).
 2. En GitHub: **Settings > Pages > Source: GitHub Actions**.
 3. En **Settings > Secrets and variables > Actions > Variables**, crea:
-   `CE_API_BASE_URL=https://TU_USUARIO-ce-bettertrader.hf.space`.
+   `CE_API_BASE_URL=https://TU_SERVICIO.onrender.com`.
 4. En la API configura `CORS_ORIGINS` con la URL de Pages, por ejemplo:
    `https://nachoweb3.github.io/codigo-elite-beter-trader`.
 5. Haz push a `main`; el workflow publicará el frontend.
@@ -146,13 +146,16 @@ mediante la variable pública del repositorio `CE_API_BASE_URL`.
 La URL será `https://nachoweb3.github.io/codigo-elite-beter-trader/`. GitHub Pages
 solo sirve la interfaz: las claves y el análisis permanecen en el backend.
 
-## Despliegue gratuito: Hugging Face + Supabase
+## Despliegue gratuito recomendado: Render Free + Supabase
 
-El `Dockerfile` también es compatible con Hugging Face Spaces (puerto 7860).
-Para que whitelist, pagos, comunidad y feedback sobrevivan a los reinicios del
-Space gratuito, crea un proyecto en [Supabase](https://supabase.com/dashboard),
-ejecuta `supabase_schema.sql` en **SQL Editor** y configura en los Secrets del
-backend:
+La API FastAPI se publica en un **Web Service Free de Render**, sin Docker de pago
+ni disco persistente. Render permite servicios Python/Docker gratuitos sin tarjeta,
+pero los duerme tras 15 minutos sin tráfico y pueden tardar alrededor de un minuto
+en despertar.
+
+Para que whitelist, pagos, comunidad y feedback sobrevivan a reinicios, crea un
+proyecto en [Supabase](https://supabase.com/dashboard), ejecuta `supabase_schema.sql`
+en **SQL Editor** y configura en Render:
 
 ```env
 SUPABASE_URL=https://TU_PROYECTO.supabase.co
@@ -160,34 +163,26 @@ SUPABASE_SERVICE_ROLE_KEY=TU_CLAVE_SERVICE_ROLE
 ```
 
 La `service_role` key solo debe existir en el backend; nunca la pongas en el
-frontend ni en GitHub. Si las variables no están configuradas, la aplicación
-sigue funcionando con JSON local para desarrollo.
+frontend ni en GitHub. Si no configuras Supabase, la app usa JSON local, que no es
+persistente en Render Free.
 
-### Publicar el Space gratis
+La configuración gratuita está en `render.yaml`: usa `plan: free` y no declara
+disco. El `Dockerfile` sigue siendo reproducible y compatible con Render.
 
-1. Crea un Space Docker vacío en [huggingface.co/new-space](https://huggingface.co/new-space), con CPU Basic Free.
-2. Añade las variables de Helius, acceso, pagos y Supabase en **Settings > Variables and secrets**.
-3. Añade el remoto del Space y publica la rama `main`:
-
-```bash
-git remote add huggingface https://huggingface.co/spaces/TU_USUARIO/ce-bettertrader
-git fetch huggingface
-git push --force-with-lease huggingface main
-```
-
-El Space dormirá tras inactividad en el plan gratuito. La URL pública será la
-que muestre Hugging Face, normalmente `https://TU_USUARIO-ce-bettertrader.hf.space`.
+Hugging Face queda como hosting gratuito del frontend estático/demo; actualmente
+los nuevos Spaces Docker requieren hardware de pago, por eso no lo usamos para la
+API.
 
 ## Publicar en GitHub y Render
 
-La configuración de producción ya está preparada en `Dockerfile`, `render.yaml` y
+La configuración de producción está preparada en `Dockerfile`, `render.yaml` y
 `.github/workflows/ci.yml`. El servicio usa un único worker porque las sesiones de
-wallet son en memoria, respeta el puerto `PORT` que asigna Render y guarda
-`data/whitelist.json` y `data/payments.json` en un disco persistente.
+wallet son en memoria, respeta el puerto `PORT` de Render y guarda los datos
+persistentes en Supabase.
 
-> **Importante:** el plan `starter` de Render es intencional. El disco persistente
-> evita perder whitelist y pagos en cada despliegue. El plan gratuito puede dormir y
-> no es adecuado para un acceso de pago con datos persistentes.
+> **Importante:** Render Free es adecuado para una comunidad pequeña y pruebas
+> reales, pero no ofrece SLA, se duerme por inactividad y su filesystem es efímero.
+> Supabase es obligatorio si no quieres perder whitelist y pagos al reiniciar.
 
 ### 1. Crear el repositorio de GitHub
 
@@ -215,14 +210,18 @@ correspondiente. No uses `git add -A` desde una carpeta superior a este proyecto
 
 1. Entra en [render.com](https://render.com), crea una cuenta y pulsa **New → Blueprint**.
 2. Conecta GitHub y selecciona `ce-bettertrader`.
-3. Render leerá `render.yaml`; acepta el servicio `ce-bettertrader` y el disco de 1 GB.
-4. En las variables marcadas como secretas introduce:
+3. Render leerá `render.yaml`; selecciona el plan **Free** y no añadas disco.
+4. Ejecuta primero `supabase_schema.sql` en Supabase.
+5. En las variables marcadas como secretas introduce:
    - `HELIUS_API_KEY`: tu clave de [Helius](https://dashboard.helius.dev).
+   - `SUPABASE_URL`: URL pública del proyecto Supabase.
+   - `SUPABASE_SERVICE_ROLE_KEY`: clave service role de Supabase.
    - `ADMIN_WALLETS`: tu wallet pública, sin espacios y separada por comas si hay varias.
    - `MERCHANT_WALLET`: wallet pública que recibirá los pagos. Usa una wallet de comercio separada.
-5. Verifica que Render mantiene `ACCESS_CONTROL=true`, `DEMO_MODE=false` y
+   - `CORS_ORIGINS`: `https://nachoweb3.github.io/codigo-elite-beter-trader`
+6. Verifica que Render mantiene `ACCESS_CONTROL=true`, `DEMO_MODE=false` y
    `ALLOW_SERVER_SIDE_TRADING=false`.
-6. Pulsa **Apply** y espera a que el health check `/api/health` quede verde.
+7. Pulsa **Apply** y espera a que el health check `/api/health` quede verde.
 
 La URL será parecida a `https://ce-bettertrader.onrender.com`. La app se sirve desde
 el mismo dominio, por lo que el login no necesita CORS. Si vas a consumir la API
@@ -253,7 +252,7 @@ No actives `DEMO_MODE` ni `ALLOW_SERVER_SIDE_TRADING` en producción.
 ### Límites y operación
 
 - La autenticación actual guarda las sesiones en memoria: un reinicio obliga a volver a firmar,
-  pero whitelist y pagos sobreviven en el disco persistente.
+  pero whitelist y pagos sobreviven en Supabase.
 - Para unas 100 personas, Helius debe tener margen suficiente y el rate limiter/caché
   reducen las llamadas repetidas. Vigila el uso en el panel de Helius.
 - La ejecución de swaps con private keys está desactivada en producción. Nunca pegues
@@ -269,8 +268,9 @@ recomendaciones de futuros análisis (las señales con más votos positivos sube
 - `POST /api/feedback/vote?signal_type=...&useful=true&wallet_address=...` — registrar voto
 - `GET /api/feedback/stats` — qué señales son más útiles
 
-> El archivo `data/feedback.json` está en `.gitignore`: en producción apunta a un volumen
-> persistente para que los votos sobrevivan a los reinicios del servidor.
+> En Render Free el filesystem es efímero. Con `SUPABASE_URL` y
+> `SUPABASE_SERVICE_ROLE_KEY` configurados, los votos se sincronizan en Supabase y
+> sobreviven a los reinicios.
 
 ## Graft (desarrollo de agentes de IA)
 
