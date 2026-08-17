@@ -41,3 +41,7 @@ analyze_tmp.json
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 graft/
 data/feedback.json
+
+# Despliegue local (binario oficial del CLI de Render, descargable)
+.tools/
+check-ps.ps1
